@@ -1,0 +1,221 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border-subtle;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-bg-primary text-text-primary antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar for luxury aesthetic */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-bg-secondary;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-bg-tertiary rounded-lg;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gold/30;
+  }
+}
+
+@layer components {
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-bg-secondary/70 backdrop-blur-glass border border-border-medium;
+  }
+
+  /* Card variants */
+  .card-elevated {
+    @apply bg-bg-secondary border border-border-subtle rounded-lg shadow-md;
+  }
+
+  .card-flat {
+    @apply bg-bg-secondary border border-border-subtle rounded-lg;
+  }
+
+  .card-glass {
+    @apply glass rounded-lg;
+  }
+
+  /* Glow effect for primary elements */
+  .glow-gold {
+    @apply shadow-glow;
+  }
+
+  .glow-gold-lg {
+    @apply shadow-glow-lg;
+  }
+
+  /* Interactive states */
+  .hover-lift {
+    @apply transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-200 ease-out hover:shadow-glow;
+  }
+
+  /* Focus visible styles */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-bg-primary;
+  }
+
+  /* Shimmer loading effect */
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
+
+  .shimmer::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(251, 191, 36, 0.1),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+
+  /* Skeleton loading */
+  .skeleton {
+    @apply bg-bg-tertiary animate-pulse rounded;
+  }
+
+  /* Gradient backgrounds */
+  .bg-gradient-radial {
+    background: radial-gradient(
+      circle at top right,
+      rgba(251, 191, 36, 0.05),
+      transparent 50%
+    );
+  }
+
+  .bg-gradient-gold {
+    background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  }
+
+  /* Text gradients */
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
+  }
+
+  /* Neumorphism effects */
+  .neumorphic {
+    box-shadow:
+      8px 8px 16px rgba(0, 0, 0, 0.5),
+      -4px -4px 8px rgba(255, 255, 255, 0.02);
+  }
+
+  .neumorphic-inset {
+    box-shadow:
+      inset 4px 4px 8px rgba(0, 0, 0, 0.5),
+      inset -2px -2px 4px rgba(255, 255, 255, 0.02);
+  }
+
+  /* Status indicators */
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+
+  .status-pending {
+    @apply bg-warning;
+  }
+
+  .status-approved {
+    @apply bg-success;
+  }
+
+  .status-rejected {
+    @apply bg-error;
+  }
+
+  /* Animation utilities */
+  .animate-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-out {
+    animation: fadeOut 0.3s ease-in;
+  }
+}
+
+@layer utilities {
+  /* Text utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Truncate utilities */
+  .truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Currency formatting */
+  .currency {
+    @apply font-mono tabular-nums;
+  }
+
+  /* Accessibility */
+  .sr-only-focusable:focus {
+    @apply not-sr-only;
+  }
+
+  /* Safe area padding for mobile */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    @apply bg-white text-black;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

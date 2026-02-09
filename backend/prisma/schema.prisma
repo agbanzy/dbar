@@ -1,0 +1,202 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum SaleStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+  COUNT
+}
+
+enum ExpenseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Role {
+  id          String            @id @default(cuid())
+  name        String            @unique
+  users       User[]
+  permissions RolePermission[]
+  createdAt   DateTime          @default(now())
+}
+
+model Permission {
+  id          String            @id @default(cuid())
+  key         String            @unique
+  description String?
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  id           String      @id @default(cuid())
+  roleId       String
+  permissionId String
+  role         Role        @relation(fields: [roleId], references: [id])
+  permission   Permission  @relation(fields: [permissionId], references: [id])
+  createdAt    DateTime    @default(now())
+}
+
+model User {
+  id           String     @id @default(cuid())
+  username     String?    @unique
+  fullName     String
+  email        String     @unique
+  phone        String?
+  passwordHash String
+  status       UserStatus @default(ACTIVE)
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  sales        Sale[]     @relation("SaleCreator")
+  approvals    Sale[]     @relation("SaleApprover")
+  expenses     Expense[]  @relation("ExpenseCreator")
+  expenseApprovals Expense[] @relation("ExpenseApprover")
+  stockMovements StockMovement[]
+  stockCounts  StockCount[]
+  auditLogs    AuditLog[]
+}
+
+model Product {
+  id        String     @id @default(cuid())
+  name      String
+  sku       String?    @unique
+  price     Decimal
+  createdAt DateTime   @default(now())
+  saleItems SaleItem[]
+  recipes   RecipeItem[]
+}
+
+model InventoryItem {
+  id           String        @id @default(cuid())
+  name         String
+  unit         String
+  reorderLevel Decimal?
+  createdAt    DateTime      @default(now())
+  stockBatches StockBatch[]
+  movements    StockMovement[]
+  recipeItems  RecipeItem[]
+  stockCounts  StockCount[]
+}
+
+model RecipeItem {
+  id              String        @id @default(cuid())
+  productId       String
+  inventoryItemId String
+  quantityUsed    Decimal
+  product         Product       @relation(fields: [productId], references: [id])
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+}
+
+model Sale {
+  id            String        @id @default(cuid())
+  createdById   String
+  approvedById  String?
+  status        SaleStatus    @default(PENDING)
+  paymentMethod PaymentMethod
+  totalAmount   Decimal
+  createdAt     DateTime      @default(now())
+  approvedAt    DateTime?
+  createdBy     User          @relation("SaleCreator", fields: [createdById], references: [id])
+  approvedBy    User?         @relation("SaleApprover", fields: [approvedById], references: [id])
+  items         SaleItem[]
+}
+
+model SaleItem {
+  id         String  @id @default(cuid())
+  saleId     String
+  productId  String
+  quantity   Decimal
+  unitPrice  Decimal
+  lineTotal  Decimal
+  sale       Sale    @relation(fields: [saleId], references: [id])
+  product    Product @relation(fields: [productId], references: [id])
+}
+
+model StockBatch {
+  id              String        @id @default(cuid())
+  inventoryItemId String
+  quantity        Decimal
+  unitCost        Decimal
+  supplier        String?
+  receiptUrl      String?
+  receivedAt      DateTime      @default(now())
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+}
+
+model StockMovement {
+  id              String            @id @default(cuid())
+  inventoryItemId String
+  type            StockMovementType
+  quantity        Decimal
+  reason          String?
+  relatedSaleId   String?
+  createdById     String
+  createdAt       DateTime          @default(now())
+  inventoryItem   InventoryItem     @relation(fields: [inventoryItemId], references: [id])
+  createdBy       User              @relation(fields: [createdById], references: [id])
+}
+
+model StockCount {
+  id              String        @id @default(cuid())
+  inventoryItemId String
+  expectedQty     Decimal
+  countedQty      Decimal
+  variance        Decimal
+  countedById     String
+  countedAt       DateTime      @default(now())
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  countedBy       User          @relation(fields: [countedById], references: [id])
+}
+
+model Expense {
+  id           String        @id @default(cuid())
+  amount       Decimal
+  category     String
+  description  String?
+  status       ExpenseStatus @default(PENDING)
+  receiptUrl   String?
+  createdById  String
+  approvedById String?
+  createdAt    DateTime      @default(now())
+  approvedAt   DateTime?
+  createdBy    User          @relation("ExpenseCreator", fields: [createdById], references: [id])
+  approvedBy   User?         @relation("ExpenseApprover", fields: [approvedById], references: [id])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  actor      User     @relation(fields: [actorId], references: [id])
+}
+

@@ -1,0 +1,85 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper: check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: get user's role from custom claims
+    function getUserRole() {
+      return request.auth.token.role;
+    }
+
+    // Helper: check if user has a specific role
+    function hasRole(role) {
+      return isAuthenticated() && getUserRole() == role;
+    }
+
+    // Helper: check if user has any of the specified roles
+    function hasAnyRole(roles) {
+      return isAuthenticated() && getUserRole() in roles;
+    }
+
+    // Users collection - managed via Cloud Functions (admin SDK)
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only via Cloud Functions
+    }
+
+    // Roles collection
+    match /roles/{roleId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only via Cloud Functions
+    }
+
+    // Products collection
+    match /products/{productId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only via Cloud Functions
+    }
+
+    // Inventory items
+    match /inventoryItems/{itemId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only via Cloud Functions
+    }
+
+    // Stock batches
+    match /stockBatches/{batchId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only via Cloud Functions
+    }
+
+    // Stock movements
+    match /stockMovements/{movementId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only via Cloud Functions
+    }
+
+    // Sales
+    match /sales/{saleId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only via Cloud Functions
+    }
+
+    // Expenses
+    match /expenses/{expenseId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only via Cloud Functions
+    }
+
+    // Audit logs
+    match /auditLogs/{logId} {
+      allow read: if hasAnyRole(['Owner', 'System Admin']);
+      allow write: if false; // Only via Cloud Functions
+    }
+
+    // Stock counts
+    match /stockCounts/{countId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only via Cloud Functions
+    }
+  }
+}

@@ -1,0 +1,19 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/ui/Spinner";
+
+export default function HomePage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/login");
+  }, [router]);
+
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <Spinner size="xl" />
+    </div>
+  );
+}
