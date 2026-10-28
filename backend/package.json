@@ -2,6 +2,7 @@
   "name": "digibar-backend",
   "version": "0.1.0",
   "private": true,
+  "main": "dist/functions.js",
   "type": "commonjs",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
@@ -22,6 +23,9 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "zod": "^4.3.6"
+  },
+  "engines": {
+    "node": "20"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

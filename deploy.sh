@@ -39,6 +39,12 @@ check_prereqs() {
 build_backend() {
   echo -e "${YELLOW}[1/4] Building backend...${NC}"
   cd backend
+
+  # Fix: Remove PORT from .env if present, as it conflicts with Cloud Functions
+  if [ -f .env ]; then
+    sed '/^PORT=/d' .env > .env.tmp && mv .env.tmp .env
+  fi
+
   npm install
   npm run build
   cd ..
@@ -72,30 +78,35 @@ EOF
   cp next.config.mjs.build next.config.mjs
 
   # Build
-  NEXT_PUBLIC_API_URL="https://us-central1-digi-bar-1a9e1.cloudfunctions.net/api" \
+  NEXT_PUBLIC_API_URL="https://us-central1-digibar-d8822.cloudfunctions.net/api" \
   NEXT_TELEMETRY_DISABLED=1 \
   npx next build
 
   # Create static export from the standalone build
   echo "Extracting static files..."
-  mkdir -p out
+  rm -rf out
+  mkdir -p out/_next
 
   # Copy static assets
-  cp -r .next/static out/_next/static 2>/dev/null || true
-
-  # Copy HTML pages from server output
-  find .next/server/app -name '*.html' | while read file; do
-    # Convert .next/server/app/path/to/page.html -> out/path/to/index.html
-    relative="${file#.next/server/app/}"
-    dir="out/$(dirname "$relative")"
-    mkdir -p "$dir"
-    cp "$file" "$dir/index.html" 2>/dev/null || cp "$file" "$dir/" 2>/dev/null || true
-  done
-
-  # Copy the root page
-  if [ -f .next/server/app/index.html ]; then
-    cp .next/server/app/index.html out/index.html
+  # Ensure destination exists and copy .next/static -> out/_next/static
+  if [ -d ".next/static" ]; then
+    cp -r .next/static out/_next/static
+  else
+    echo -e "${RED}Error: .next/static not found. Build may have failed.${NC}"
+    exit 1
   fi
+
+  # Copy HTML, RSC, and Meta files preserving structure
+  # We switch to the source directory to make relative paths easier
+  cd .next/server/app
+  find . -type f \( -name "*.html" -o -name "*.rsc" -o -name "*.meta" \) | while read file; do
+    # file is like ./login.html or ./sales/create.html
+    clean_file="${file#./}"
+    dest_dir="../../../out/$(dirname "$clean_file")"
+    mkdir -p "$dest_dir"
+    cp "$file" "$dest_dir/"
+  done
+  cd ../../..
 
   # Copy public assets
   cp -r public/* out/ 2>/dev/null || true
@@ -114,7 +125,8 @@ deploy() {
   echo -e "${YELLOW}[3/4] Deploying to Firebase...${NC}"
 
   # Deploy Firestore rules, Storage rules, Functions, and Hosting
-  firebase deploy --project digi-bar-1a9e1
+  # Explicitly set the project ID to ensure we target the correct environment
+  firebase deploy --project digibar-d8822
 
   echo -e "${GREEN}Deployment complete!${NC}"
   echo ""
@@ -124,15 +136,15 @@ deploy() {
 print_summary() {
   echo -e "${YELLOW}[4/4] Deployment Summary${NC}"
   echo "=========================================="
-  echo -e "Frontend:  ${GREEN}https://digi-bar-1a9e1.web.app${NC}"
-  echo -e "API:       ${GREEN}https://us-central1-digi-bar-1a9e1.cloudfunctions.net/api${NC}"
-  echo -e "Console:   ${GREEN}https://console.firebase.google.com/project/digi-bar-1a9e1${NC}"
+  echo -e "Frontend:  ${GREEN}https://digibar-d8822.web.app${NC}"
+  echo -e "API:       ${GREEN}https://us-central1-digibar-d8822.cloudfunctions.net/api${NC}"
+  echo -e "Console:   ${GREEN}https://console.firebase.google.com/project/digibar-d8822${NC}"
   echo "=========================================="
   echo ""
   echo "Post-deploy checklist:"
   echo "  1. Set backend/.env JWT_SECRET to a strong random string"
-  echo "  2. Verify API health: curl https://us-central1-digi-bar-1a9e1.cloudfunctions.net/api/health"
-  echo "  3. Test login flow at https://digi-bar-1a9e1.web.app/login"
+  echo "  2. Verify API health: curl https://us-central1-digibar-d8822.cloudfunctions.net/api/health"
+  echo "  3. Test login flow at https://digibar-d8822.web.app/login"
   echo "  4. Run seed script if needed: cd backend && npm run seed"
 }
 

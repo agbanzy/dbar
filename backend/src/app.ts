@@ -35,8 +35,8 @@ export const createApp = () => {
     origin: [
       process.env.FRONTEND_URL || "http://localhost:3000",
       "http://localhost:3001",
-      "https://digi-bar-1a9e1.web.app",
-      "https://digi-bar-1a9e1.firebaseapp.com"
+      "https://digibar-d8822.web.app",
+      "https://digibar-d8822.firebaseapp.com"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
